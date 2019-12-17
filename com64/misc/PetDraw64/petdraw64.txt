@@ -1,0 +1,77 @@
+PetDraw64 By David Murray 2015
+contact: dfwgreencars@gmail.com
+
+PetDraw is designed to allow the creation of artwork using nothing but PETSCII characters and whatever text-mode colors are allowed by the system. Besides just having fun, one of the benefits of this program is to create better-looking text screens for other software. Currently, ports exist for C64, Plus/4 (and C16), PET 4032 and PET 8032..
+
+PetDraw has 4 primary screens. It starts up at the help screen, but you can't actually do anything at the help screen. Press any key to leave the help screen. 
+
+F1 - DRAW MODE
+
+F3 - PIXEL MODE
+
+F5 - TEXT MODE
+
+F7 - COLOR PICKER
+
+Most features only work while in DRAW mode. Here is a list of commands and what they do:
+
+***DRAW MODE***
+
+CURSOR KEYS - Move your cursor around.
+SPACE - Plot the currently selected character
+RETURN - Select a new character
+C - Change the color under the cursor to the currently selected color, without changing the character.
+G - Get the character and color under the cursor and make it the selected color. (basically works like a 1-character copy/paste.)
+SHIFT-HOME - Clear the screen
+F - Fill the screen with selected color and character
+BACKSPACE - Clear the character under the cursor
+SHIFT+U/D/L/R - move the entire line that the cursor is on up/down/left/right.  It will cycle around to the other side    of the screen.
+L - Load a file.  if you just press return with no filename, load will abort.
+S - Save a file.  Pressing return with no filename will abort.
+H - The help screen.
+COLOR-KEYS - You can change color instantly by pressing CONTROL or C= key combined with 1-8.
+
+***PIXEL MODE***
+
+In this mode, you can draw using PETSCII block characters creating an 80x50 pixel array.  You'll need to use F7 to change colors in this mode. Only the following keys do anything.
+
+CURSOR KEYS - to move around
+SPACE - To plot
+BACKSPACE - to unplot
+F7 - Select color
+
+***TEXT MODE***
+
+Text mode is a little buggy.  But generally it is only used for writing a few words and then exiting back to draw mode by pressing F1 or F3.  The keyboard behaves mostly just like it does under BASIC.
+
+***COLOR PICKER***
+
+You can do 3 things in this screen.
+
+B - Set the border color to the currently highlighted color.
+G - Set the background color to the current color.
+RETURN - Set the draw color to the current color and return to draw-mode.
+
+***TIPS***
+
+3 Examples are include with the ZIP file that you can load, just so you'll have something to play with.
+
+If you want to hide the cursor (for taking a screenshot), plot something in the same color as the background and move the cursor over it.  I may include a function in the future to hide the cursor.
+
+Sometimes it is faster to draw whatever you want in black and white, then come back and colorize everything using the C-key.
+
+***Possible Future Enhancements***
+
+Here are some features I've thought about adding, if there is interest to do so:
+
+-Intelligent flood-fill.
+-Better load/save screen with menus and ability to select other drive numbers.
+-Color keys available in Pixel mode.
+-Sounds, beeps, etc.  
+-Cut/Paste features
+-Mouse and/or lightpen support.
+-Joystick support
+-command to hide cursor.
+-A screen to allow redefining of the character set.
+-Rearrange the character select screen so that similar PETSCII characters are next to each other.
+-Load filters that will recognize and convert from other petdraw platforms.  Technically you can currently load a C64 verson on the pus/4 and vice-versa but the colors will be different.

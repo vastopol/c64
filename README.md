@@ -26,3 +26,12 @@ https://csdb.dk/release/?id=131483
 
 http://www.the8bitguy.com/download-davids-software/
 
+
+doom
+https://scpu.amidog.se/doku.php?id=scpu:doom
+
+
+https://www.myabandonware.com/
+
+https://archive.org/details/softwarelibrary_c64
+

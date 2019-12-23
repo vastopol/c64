@@ -1,0 +1,2360 @@
+USER-NOTES FOR DATATRONIC VIC-FORTH AND C64-FORTH    20-Oct-2000
+----------------------------------------------------------------
+
+These notes are intended as an aid for users of Datatronic VIC-FORTH
+and C64-FORTH who may lack the official manuals and/or system disks.
+
+Much of the information here was derived through investigation or
+experiment; thus errors may be present.  Use with caution.
+
+
+REFERENCES
+----------
+A C64-FORTH command summary (in Swedish) is available from:
+
+  www.softwolves.pp.se/idoc/docs/vicforth_sv.zip
+
+The "Fig-Forth Installation Manual" is the primary reference for
+Fig-Forth.  It may be obtained from:
+
+  ftp.taygeta.com/pub/Archive/docs/FIGINST.ZIP
+
+
+INTRODUCTION
+------------
+As VIC-FORTH and C64-FORTH are very similar, they shall be hereafter
+referred to as 'Datatronic forth' when the information applies equally
+to both.
+
+Both VIC-FORTH and C64-FORTH are supplied in cartridge form:
+
+ VIC-FORTH  size = 8K, load address = $A000
+ C64-FORTH  size = 12K, load address = $8000
+
+The forth dialect used is Fig-Forth.  In addition to the usual
+Fig-Forth words, a number of Commodore specific words are included
+which allows such things as disk communication, input/output
+redirection and cassette load and save.
+
+Here are the main differences between the VIC and C64 versions:
+
+ C64-FORTH:
+   Screens = 40 column x 25 lines
+   C/L = 40
+   B/SCR = 1
+   B/BUF = 1024
+
+ VIC-FORTH:
+   Screens = 64 column x 16 lines
+   C/L = 64
+   B/SCR = 4
+   B/BUF = 256
+
+In C64-FORTH, the screen editor and 6502 assembler are built-in; in
+VIC-FORTH they were (presumably) loaded in from a system disk.  If
+you are a VIC-FORTH user and do not have the system disk, source
+definitions and disk files for a compatible editor and 6502 assembler
+are provided.
+
+
+USING DATATRONIC FORTH
+----------------------
+As with most forth systems, a disk drive is virtually a necessity.
+CLOAD and CSAVE provide some cassette support but there is no way to
+save or load forth source screens to cassette.
+
+
+IMPORTANT! - ONLY USE BLANK FORMATTED DISKS WITH DATATRONIC FORTH
+
+DATATRONIC FORTH USES A DIRECT DISK ACCESS METHOD WHICH COMPLETELY
+BYPASSES COMMODORE'S FILE SYSTEM.  REGULAR COMMODORE FILES AND
+DATATRONIC FORTH FILES CANNOT CO-EXIST ON THE SAME DISK.
+
+
+To start a disk session, insert a blank formatted disk and type
+
+   EMPTY-BUFFERS DISC  
+
+If there is no error reported, you can then LIST or LOAD any existing
+forth screens on the disk.
+
+Alternatively, if you have the system disk inserted, you could enter
+
+   BOOT-UP
+
+This initialises the forth disk system and loads BLOCK 1.  This is
+also a handy way to automatically startup any applications that you
+may create.
+
+
+GLOSSARY OF NON FIG-FORTH WORDS
+-------------------------------
+
+ (DERROR)      ---
+          The disk error routine used by R/W.  This word normally
+          executes DERROR.
+
+ -BCD          n1 --- n2
+          Convert the binary number n1 to a packed BCD number n2.  n1
+          must be in the range from 0 to 99.  Pronounced "dash-b-c-d".
+
+ -DISC         adr sec trk drv f1 -- f2
+          Disk read/write primitive used by R/W.  Write occurs when
+          f1=0, read when f1=1.
+
+ -MOVE         adr n ---                                   EDITOR
+          Move a line of text at address adr to line n of the current
+          screen.  Pronounced "dash-move".
+
+ ?DISC         ---
+          Read the disk error channel storing the message at address
+          $8C0 (C64-FORTH) or $1295 (VIC-FORTH) and the length byte
+          at $8BF (C64-FORTH) or $1294 (VIC-FORTH).  See COUNT and
+          TYPE.  Pronounced "question-disc".
+
+ 1-!           adr ---
+          Subtract 1 from the contents of the specified address.
+          Pronounced "one-minus-store".
+
+ 1+!           adr ---
+          Add 1 to the contents of the specified address.  Pronounced
+          "one-plus-store".
+
+ 2DROP, 2DUP, 2OVER, 2ROT, 2SWAP, 2VARIABLE, 2CONSTANT
+          Double number equivalents of the single number operators.
+          Pronounced "two-drop", "two-dup", "two-over", "two-rote",
+          "two-swap", "two-variable" and "two-constant".
+
+ ASSEMBLER     ---
+          Set the CONTEXT vocabulary to ASSEMBLER.  ASSEMBLER is
+          IMMEDIATE so it executes even when compiling.
+
+ B             ---                                         EDITOR
+          Select the previous screen.  See N and L.  Pronounced
+          "back".
+
+ B.            n ---
+          Print the number n in binary form.  Pronounced "b-dot".
+
+ BACKUP        ---                                         EDITOR
+          Copy disk in drive 0 to drive 1 after performing FLUSH.
+          For use with 2-drive disks only.
+
+ BOOT-UP       ---
+          Empties the buffers, initialises the disk system and loads
+          screen 1.
+
+ CLEAR         n ---                                       EDITOR
+          Fill screen n with blanks and select it for editing.  See
+          ZERO.
+
+ CLOAD         --- f
+          Load the saved wordlist from cassette.  Returns an error
+          flag f (0=none, 24=error).  See CSAVE.
+
+ CLOSE         n ---
+          Close logical file n.
+
+ COPY          n1 n2 ---                                   EDITOR
+          Copy screen n1 to screen n2.
+
+ CSAVE         --- f
+          Save the wordlist and USER-variables to cassette.  The 
+          wordlist may be given a name (see NAME).  Returns an error
+          flag (0=none, 24=error).  See CLOAD.
+
+ D             n ---                                       EDITOR
+          Delete line n of the current screen.  All lines underneath
+          move up and line 15 fills with blanks.  Pronounced "delete".
+
+ DERROR        ---
+          Normally executed by (DERROR).  A disk error message is
+          displayed and QUIT is executed.  WARNING is set to 0.
+          Pronounced "d-error".
+
+ DISC          ---
+          Start the disk system.  Initialises the disk and opens
+          logical file 15 for commands and file 13 for data.
+
+ E             n ---                                       EDITOR
+          Fill line n of the current screen with blanks.  Pronounced
+          "erase".
+
+ EDITOR        ---
+          Set the CONTEXT vocabulary to EDITOR.  EDITOR is made
+          IMMEDIATE so it executes even when compiling.
+
+ FREE          n1 n2 ---                                   EDITOR
+          Display the number of all free screens in the ranges n1 to
+          n2.  A screen is considered free if the first cell contains
+          a binary 0.  See CLEAR and ZERO.
+
+ H.            n ---
+          Print the number n in hexadecimal form.  Pronounced "h-dot".
+
+ HPIN          n --- f
+          Send the current input stream to logical file number n.
+          Returns and error flag f (0=none, 24=error).  See OPEN.
+          Pronounced "h-p-in".
+
+ HPOFF         ---
+          Restore the current input and output stream to the
+          keyboard and screen respectively.  Pronounced "h-p-off".
+
+ HPOUT         n --- f
+          Send the current output stream to logical file number n.
+          Returns an error flag f (0=none, 24=error).  See OPEN.
+          Pronounced "h-p-out".
+
+ H             n ---                                       EDITOR
+          Hold line n of the current screen at PAD.
+
+ I'            --- n
+          Used in DO - LOOP construct.  Leave the loop limit on the
+          stack.  See I, J, K.
+
+ J             --- n
+          Used in a nested DO - LOOP structure.  Leave the loop index
+          of the second outer loop on the stack.  See I I' K.
+
+ K             --- n
+          Used in a nested DO - LOOP structure.  Leave the loop index
+          of the third outer loop on the stack.  See I I' J.
+
+ L             ---                                         EDITOR
+          List the current screen.
+
+ LINE          n --- adr                                   EDITOR
+          Leave the address in memory of line n of the current screen.
+
+ N             ---                                         EDITOR
+          Select the next screen.  See N and L.
+
+ NAME          adr n ---
+          Set the filename for file operations.  Must be used before
+          OPEN or CSAVE.
+
+ OPEN          n1 n2 n3 --- f
+          Open the logical file number n1 on device n2 with secondary
+          address n3.  Filename must have been set with NAME.  Returns
+          an error flag f (0=none, 24=error).
+
+ P             n ---                                       EDITOR
+          Used in the form
+          n P xxxx . . . . . xxxxx
+
+          Place text xxxx into line n of the current screen.  A copy
+          of the text is placed in PAD.  See L.  Pronounced "put".
+
+ PAPER         ---                                         EDITOR
+          Redirect the output stream to the printer device.  See
+          VIDEO.
+
+ PROGRAM       ---                                         EDITOR
+          Copy screens 0 - 60 from drive 0 to drive 1.  For 2-drive
+          disks only.
+
+ R             n ---                                       EDITOR
+          Replace line n of the current screen with the text at PAD.
+          Pronounced "replace".
+
+ S             n ---                                       EDITOR
+          Insert a blank line at line n of the current screen.
+          Line n and all lines underneath are moved down.  Pronounced
+          "spread".
+
+ SCREENS       from to count ---                           EDITOR
+          Copy a range of screens.  No check is made for overlap.
+
+ SHOW          n1 n2 ---
+          Display screens from n1 to n2 as TRIAD pages.
+
+ T*            ud u --- u-triple
+          Multiply 32-bit number ud with 16-bit number u.  Leave a
+          48-bit number result.
+
+ T/            u-triple u --- ud
+          Divide 48-bit number with a 16-bit number.  Leave the 32-bit
+          result.
+
+ TEXT          c ---
+          Read a string from the input stream delimited by character
+          c.  PAD is set to blanks and the string moved to PAD.
+
+ VIDEO         ---                                         EDITOR
+          Redirect input and output stream to the screen and keyboard.
+          Closes the printer file.  See PAPER.
+
+ ZERO          n ---                                       EDITOR
+          Fill screen n with "null" character and select it for
+          editing.  See CLEAR and FREE.
+
+
+
+FIG-FORTH GLOSSARY
+------------------
+
+(The following is taken from the Fig-Forth Installation Manual.)
+
+This  glossary contains all of the word definitions in Release 1 of 
+fig-FORTH.  The definitions are present in order of their ascii sort.
+
+The first line of each entry shows a symbolic description of the 
+action of the procedure on the parameter stack.  The symbols indicate
+the order in which input parameters have been placed on the stack.
+The three dashes "---" indicate the execution point; any parameters
+left on the stack are listed.  In this notation, the top of the stack
+is to the right.
+
+The symbols include:
+
+addr      memory address
+b         8 bit byte (ie. hi 8 bits zero)
+c         7 bit ascii character (hi 9 bits zero)
+d         32 bit signed double integer, most significant portion 
+          with sign on top of stack.
+f         boolean flag.  0=false, non-zero=true
+ff        boolean false flag=0
+n         16 bit signed integer number
+u         16 bit unsigned integer
+tf        boolean true flag=non zero
+
+Unless otherwise noted, all references to numbers are for 16 bit 
+signed integers.  On 8 bit data bus computers, the high byte of a 
+number is on top of the stack, with the sign in the leftmost bit.  
+For 32 bit signed double numbers, the most significant (with the 
+sign) is on top.
+
+All arithmetic is implicitly 16 bit signed integer math, with error 
+and under-flow indication unspecified.
+
+
+ !             n  addr  ---
+          Store 16 bits of n at address.  Pronounced "store".
+
+ !CSP
+          Save the stack position in CSP.  Used as part of the 
+          compiler security.
+
+ #             d1  ---  d2
+          Generate from a double number d1, the next ascii character 
+          which is placed in an output string.  Result d2 is the 
+          quotient after division by BASE, and is maintained for 
+          further processing.  Used between <# and #>.  See #S.
+
+ #>            d  ---  addr count
+          Terminates numeric output conversion by dropping d, leaving
+          the text address and character count suitable for TYPE.
+
+ #S            d1  ---  d2
+          Generates ascii text in the text output buffer, by the use 
+          of #, until a zero double number n2 results.  Used between 
+          <# and #>.
+
+ '             ---  addr
+          Used in the form:
+                    '  nnnn
+          Leaves the parameter field address of dictionary word nnnn.
+          As a compiler directive, executes in a colon definition to
+          compile the address as a literal.  If the word is not found
+          after a search of CONTEXT and CURRENT, an appropriate error
+          message is given.  Pronounced "tick".
+
+ (
+          Used in the form:
+                    ( cccc)
+          Ignore a comment that will be delimited by a right
+          parenthesis on the same line.  May occur during execution 
+          or in a colon-definition.  A blank after the leading 
+          parenthesis is required.
+
+ (.")
+          The run-time procedure, compiled by ." which transmits the 
+          following in-line text to the selected output device.  See 
+          ."
+
+ (;CODE)
+          The run-time procedure, compiled by ;CODE, that rewrites 
+          the code field of the most recently defined word to point 
+          to the following machine code sequence.  See ;CODE.
+
+ (+LOOP)       n  ---
+          The run-time procedure compiled by +LOOP, which increments 
+          the loop index by n and tests for loop completion.  See 
+          +LOOP.
+
+ (ABORT)
+          Executes after an error when WARNING is -1.  This word 
+          normally executes ABORT, but may be altered (with care) to 
+          a user's alternative procedure.
+
+ (DO)
+          The run-time procedure compiled by DO which moves the loop 
+          control parameters to the return stack.  See DO.
+
+ (FIND)        addr1  addr2  ---  pfa  b  tf      (ok)
+               addr1  addr2  ---  ff              (bad)
+          Searches the dictionary starting at the name field address 
+          addr2, matching to the text at addr1.  Returns parameter 
+          field address, length byte of name field and boolean true 
+          for a good match.  If no match is found, only a boolean 
+          false is left.
+
+ (LINE)        n1  n2  ---  addr  count
+          Convert the line number n1 and the screen n2 to the disc 
+          buffer address containing the data.  A count of 64 indicates
+          the full line text length.
+
+ (LOOP)
+          The run-time procedure compiled by LOOP which increments 
+          the loop index and tests for loop completion.  See LOOP.
+
+ (NUMBER)      d1  addr1  ---  d2  addr2
+          Convert the ascii text beginning at addr1+1 with regard to 
+          BASE.  The new value is accumulated into double number d1,  
+          being left as d2.  Addr2 is the address of the first 
+          unconvertable digit.  Used by NUMBER.
+
+ *             n1  n2  ---  prod
+          Leave the signed product of two signed numbers.
+
+ */            n1  n2  n3  ---  n4
+          Leave the ratio n4 = n1*n2/n3 where all are signed numbers.
+          Retention of an intermediate 31 bit product permits greater
+          accuracy than would be available with the sequence:
+          n1 n2 * n3 /
+
+ */MOD         n1  n2  n3  ---  n4  n5
+          Leave the quotient n5 and remainder n4 of the operation 
+          n1*n2/n3.  A 31 bit intermediate product is used as for */.
+
+ +             n1  n2  ---  sum
+          Leave the sum of n1+n2.
+
+ +!            n  addr  ---
+          Add n to the value at the address.  Pronounced "plus-store".
+
+ +-            n1  n2  ---  n3
+          Apply the sign of n2 to n1, which is left as n3.
+
+ +BUF          addr1  ---  addr2  f
+          Advance the disc buffer address addr1 to the address of 
+          the next buffer addr2.  Boolean f is false when addr2 is 
+          the buffer presently pointed to by variable PREV.
+
+ +LOOP               n1  ---       (run)
+               addr  n2  ---       (compile)
+          Used in a colon-definition in the form:
+                    DO  ...  n1  +LOOP
+          At run-time, +LOOP selectively controls branching back to 
+          the corresponding DO based on n1, the loop index and the 
+          loop limit.  The signed increment n1 is added to the index 
+          and the total compared to the limit.  The branch back to 
+          DO occurs until the new index is equal to or greater than 
+          the limit (n1>0), or until the new index is equal to or 
+          less than the limit (n1<0).  Upon exiting the loop, the 
+          parameters are discarded and execution continues ahead.
+
+          At compile time, +LOOP compiles the run-time word (+LOOP) 
+          and the branch offset computed from HERE to the address 
+          left on the stack by DO.  n2 is used for compile-time 
+          error checking.
+
+ +ORIGIN       n  ---  addr
+          Leave the memory address relative by n to the origin 
+          parameter area.  n is the minimum address unit, either 
+          byte or word.  This definition is used to access or modify 
+          the boot-up parameters at the origin area.
+
+ ,             n  ---
+          Store n into the next available dictionary memory cell, 
+          advancing the dictionary pointer.  (comma)
+
+ -             n1  n2  ---  diff
+          Leave the difference of n1-n2.
+
+ -->
+          Continue interpretation with the next disc screen.  
+          (pronounced next-screen).
+
+ -DUP          n1  ---  n1         (if zero)
+               n1  ---  n1  n1     (non-zero)
+          Reproduce n1 only if it is non-zero.  This is usually used 
+          to copy a value just before IF, to eliminate the need for 
+          an ELSE part to drop it.
+
+ -FIND         ---  pfa  b  tf     (found)
+               ---  ff             (not found)
+          Accepts the next text word (delimited by blanks) in the 
+          input stream to HERE, and searches the CONTEXT and then 
+          CURRENT vocabularies for a matching entry.  If found, the 
+          dictionary entry's parameter field address, its length 
+          byte, and a boolean true is left.  Otherwise, only a 
+          boolean false is left.
+
+ -TRAILING     addr  n1  ---  addr  n2
+          Adjusts the character count n1 of a text string beginning 
+          address to suppress the output of trailing blanks.  ie. 
+          the characters at addr+n2 are blanks.
+
+ .             n  ---
+          Print a number from a signed 16 bit two's complement value,
+          converted according to the numeric BASE.  A trailing blank
+          follows.  Pronounced "dot".
+
+ ."
+          Used in the form:
+                    ." cccc"
+          Compiles an in-line string cccc (delimited by the trailing 
+          ") with an execution procedure to transmit the text to the 
+          selected output device.  If executed outside a definition, 
+          ." will immediately print the text until the final ".  The 
+          maximum number of characters may be an installation 
+          dependent value.  See (.").
+
+ .LINE         line  scr  ---
+          Print on the terminal device, a line of text from the disc 
+          by its line and screen number.  Trailing blanks are 
+          suppressed.
+
+ .R            n1  n2  ---
+          Print the number n1 right aligned in a field of whose width
+          is n2.  No following blank is printed.
+
+ /             n1  n2  ---  quot
+          Leave the signed quotient of n1/n2.
+
+ /MOD          n1  n2  ---  rem quot
+          Leave the remainder and signed quotient of n1/n2.  The 
+          remainder has the sign of the dividend.
+
+ 0 1 2 3        ---  n
+          These small numbers are used so often that it is attractive
+          to define them by name in the dictionary as constants.
+
+ 0<            n  ---  f
+          Leave a true flag if the number is less than zero
+          (negative), otherwise leave a false flag.
+
+ 0=            n  ---  f
+          Leave a true flag if the number is equal to zero, otherwise
+          leave a false flag.
+
+ 0BRANCH       f  ---
+          The run-time procedure to conditionally branch.  If f is 
+          false (zero), the following in-line parameter is added to 
+          the interpretive pointer to branch ahead or back.  
+          Compiled by IF, UNTIL, and WHILE.
+
+ 1+            n1  ---  n2
+          Increment n1 by 1.
+
+ 2+            n1  ---  n2
+          Leave n1 incremented by 2.
+
+ :
+          Used in the form called a colon-definition:
+                    : cccc   ...  ;
+          Creates a dictionary entry defining cccc as equivalent to 
+          the following sequence of Forth word definitions '...' 
+          until the next ';' or ';CODE'.  The compiling process is 
+          done by the text interpreter as long as STATE is non-zero.  
+          Other details are that the CONTEXT vocabulary is set to 
+          the CURRENT vocabulary and that words with the precedence 
+          bit set are executed rather than being compiled.
+
+ ;
+          Terminate a colon-definition and stop further compilation.  
+          Compiles the run-time ;S.
+
+ ;CODE
+          Used in the form:
+                    : cccc  ...  ;CODE
+                         assembly mnemonics
+          Stop compilation and terminate a new defining word cccc by 
+          compiling (;CODE).  Set the CONTEXT vocabulary to ASSEMBLER,
+          assembling to machine code the following mnemonics.
+
+          When cccc later executes in the form:
+                    cccc  nnnn
+          the word nnnn will be created with its execution procedure 
+          given by the machine code following cccc.  That is, when 
+          nnnn is executed, it does so by jumping to the code after 
+          nnnn.  An existing defining word must exist in cccc prior 
+          to ;CODE.
+
+ ;S
+          Stop interpretation of a screen.  ;S is also the run-time 
+          word compiled at the end of a colon-definition which 
+          returns execution to the calling procedure.
+
+ <             n1  n2  ---  f
+          Leave a true flag if n1 is less than n2; otherwise leave a 
+          false flag.
+
+ <#
+          Setup for pictured numeric output formatting using the words:
+                    <#  #  #S  SIGN  #>
+          The conversion is done on a double number producing text at
+          PAD.
+
+ <BUILDS
+          Used within a colon-definition:
+                    : cccc  <BUILDS  ...  DOES>  ...  ;
+          Each time cccc is executed, <BUILDS defines a new word with a
+          high-level execution procedure.  Executing cccc in the form:
+                    cccc  nnnn
+          uses <BUILDS to create a dictionary entry for nnnn with a 
+          call to the DOES> part for nnnn.  When nnnn is later 
+          executed, it has the address of its parameter area on the 
+          stack and executes the words after DOES> in cccc.  <BUILDS 
+          and DOES> allow run-time procedures to be written in high-
+          level rather than in assembler code (as required by ;CODE ).
+
+ =             n1  n2  ---  f
+          Leave a true flag if n1=n2; otherwise leave a false flag.
+
+ >             n1  n2  ---  f
+          Leave a true flag if n1 is greater than n2; otherwise a 
+          false flag.
+
+ >R            n  ---
+          Remove a number from the computation stack and place as 
+          the most accessable on the return stack.  Use should be 
+          balanced with R> in the same definition.
+
+ ?             addr  ---
+          Print the value contained at the address in free format 
+          according to the current base.
+
+ ?COMP
+          Issue error message if not compiling.
+
+ ?CSP
+          Issue error message if stack position differs from value 
+          saved in CSP.
+
+ ?ERROR        f  n  ---
+          Issue an error message number n, if the boolean flag is 
+          true.
+
+ ?EXEC
+          Issue an error message if not executing.
+
+ ?LOADING
+          Issue an error message if not loading.
+
+ ?PAIRS        n1  n2  ---
+          Issue an error message if n1 does not equal n2.  The message
+          indicates that compiled conditionals do not match.
+
+ ?STACK
+          Issue an error message if the stack is out of bounds.  
+          This definition may be installation dependent.
+
+ ?TERMINAL     ---  f
+          Perform a test of the terminal keyboard for actuation of 
+          the break key.  A true flag indicates actuation.  This 
+          definition is installation dependent.
+
+ @             addr  ---  n
+          Leave the 16 bit contents of address.
+
+ ABORT
+          Clear the stacks and enter the execution state.  Return 
+          control to the operators terminal, printing a message 
+          appropriate to the installation.
+
+ ABS           n  ---  u
+          Leave the absolute value of n as u.
+
+ AGAIN         addr  n  ---        (compiling)
+          Used in a colon-definition in the form:
+                    BEGIN  ...  AGAIN
+          At run-time, AGAIN forces execution to return to 
+          corresponding BEGIN.  There is no effect on the stack.  
+          Execution cannot leave this loop (unless R> DROP is 
+          executed one level below).
+
+          At compile time, AGAIN compiles BRANCH with an offset from 
+          HERE to addr.  n is used for compile-time error checking.
+
+ ALLOT         n  ---
+          Add the signed number to the dictionary pointer DP.  May 
+          be used to reserve dictionary space or re-origin memory.  
+          n is with regard to computer address type (byte or word).
+
+ AND           n1  n2  ---  n3
+          Leave the bitwise logical and of n1 and n2 as n3.
+
+ B/BUF         ---  n
+          This constant leaves the number of bytes per disc buffer, 
+          the byte count read from disc by BLOCK.
+
+ B/SCR         ---  n
+          This constant leaves the number of blocks per editing 
+          screen.  By convention, an editing screen is 1024 bytes 
+          organised as 16 lines of 64 characters each.
+
+ BACK          addr ---
+          Calculate the backward branch offset from HERE to addr and 
+          compile into the next available dictionary memory address.
+
+ BASE          ---  addr
+          A user variable containing the current number base used 
+          for input and output conversion.
+
+ BEGIN         ---  addr  n        (compiling)
+          Occurs in a colon-definition in form:
+                    BEGIN  ...  UNTIL
+                    BEGIN  ...  AGAIN
+                    BEGIN  ...  WHILE  ...  REPEAT
+          At run-time, BEGIN marks the start of a sequence that may 
+          be repetitively executed.  It serves as a return point 
+          from the corresponding UNTIL, AGAIN or REPEAT.  When 
+          executing UNTIL, a return to BEGIN will occur if the top 
+          of the stack is false; for AGAIN and REPEAT a return to 
+          BEGIN always occurs.
+
+          At compile time BEGIN leaves its return address and n for 
+          compiler error checking.
+
+ BL            ---  c
+          A constant that leaves the ascii value for "blank".
+
+ BLANKS        addr  count  ---
+          Fill an area of memory begining at addr with blanks.
+
+ BLK           ---  addr
+          A user variable containing the block number being
+          interpreted.  If zero, input is being taken from the
+          terminal input buffer.
+
+ BLOCK         n  ---  addr
+          Leave the memory address of the block buffer containing 
+          block n.  If the block is not already in memory, it is 
+          transferred from disc to which ever buffer was least 
+          recently written.  If the block occupying that buffer has 
+          been marked as being updated, it is re-written to disc 
+          before block n is read into the buffer.  See also BUFFER, 
+          R/W  UPDATE  FLUSH
+
+ BLOCK-READ
+ BLOCK-WRITE
+          These are preferred names for the installation dependent 
+          code to read and write one block to the disc.
+
+ BRANCH
+          The run-time procedure to unconditionally branch.  An
+          inline offset is added to the interpretive pointer IP to 
+          branch ahead or back.  BRANCH is compiled by ELSE, AGAIN, 
+          REPEAT.
+
+ BUFFER        n  ---  addr
+          Obtain the next memory buffer, assigning it to block n.  
+          If the contents of the buffer is marked as updated, it is 
+          written to the disc.  The block is not read from the disc.  
+          The address left is the first cell within the buffer for 
+          data storage.
+
+ C!            b  addr  ---
+          Store 8 bits at address.  On word addressing computers, 
+          further specification is necessary regarding byte 
+          addressing.
+
+ C,            b  ---
+          Store 8 bits of b into the next available dictionary byte, 
+          advancing the dictionary pointer.  This is only available 
+          on byte addressing computers, and should be used with 
+          caution on byte addressing minicomputers.
+
+ C@            addr  ---  b
+          Leave the 8 bit contents of memory address.  On word 
+          addressing computers, further specification is needed 
+          regarding byte addressing.
+
+ CFA           pfa  ---  cfa
+          Convert the parameter field address of a definition to its 
+          code field address.
+
+ CMOVE         from  to  count  ---
+          Move the specified quantity of bytes beginning at address 
+          from to address to.  The contents of address from is moved 
+          first proceeding toward high memory.  Further specification
+          is necessary on word addressing computers.
+
+ COLD
+          The cold start procedure to adjust the dictionary pointer 
+          to the minimum standard and restart via ABORT.  May be 
+          called from the terminal to remove application programs 
+          and restart.
+
+ COMPILE
+          When the word containing COMPILE executes, the execution 
+          address of the word following COMPILE is copied (compiled) 
+          into the dictionary.  This allows specific compilation 
+          situations to be handled in addition to simply compiling 
+          an execution address (which the interpreter already does).
+
+ CONSTANT      n  ---
+          A defining word used in the form:
+                    n  CONSTANT  cccc
+          to create word cccc, with its parameter field containing 
+          n.  When cccc is later executed, it will push the value of 
+          n to the stack.
+
+ CONTEXT       ---  addr
+          A user variable containing a pointer to the vocabulary 
+          within which dictionary searches will first begin.
+
+ COUNT         addr1  ---  addr2  n
+          Leave the byte address addr2 and byte count n of a message 
+          text beginning at addr1.  It is presumed that the first 
+          byte at addr1 contains the text byte count and the actual 
+          text starts with the second byte.  Typically COUNT is 
+          followed by TYPE.
+
+ CR
+          Transmit a carriage return and line feed to the selected 
+          output device.
+
+ CREATE
+          A defining word used in the form:
+                    CREATE  cccc
+          by such words as CODE and CONSTANT to create a dictionary 
+          header for a Forth definition.  The code field contains 
+          the address of the word's parameter field.  The new word 
+          is created in the CURRENT vocabulary.
+
+ CSP           ---  addr
+          A user variable temporarily storing the stack pointer 
+          position, for compilation error checking.
+
+ D+            d1  d2  ---  dsum
+          Leave the double number sum of two double numbers.
+
+ D+-           d1  n  ---  d2
+          Apply the sign of n to the double number d1, leaving it as 
+          d2.
+
+ D.            d  ---
+          Print a signed double number from a 32 bit two's complement
+          value.  The high-order 16 bits are most accessable on the
+          stack.  Conversion is performed according to the current
+          BASE.  A blank follows.  Pronounced D-dot.
+
+ D.R           d  n  ---
+          Print a signed double number d right aligned in a field n 
+          characters wide.
+
+ DABS          d  ---  ud
+          Leave the absolute value ud of a double number.
+
+ DECIMAL
+          Set the numeric conversion BASE for decimal input-output.
+
+ DEFINITIONS
+          Used in the form:
+                    cccc  DEFINITIONS
+          Set the CURRENT vocabulary to the CONTEXT vocabulary.  In 
+          the example, executing vocabulary name cccc made it the 
+          CONTEXT vocabulary and executing DEFINITIONS made both 
+          specify vocabulary cccc.
+
+ DIGIT         c  n1  ---  n2  tf  (ok)
+               c  n1  ---  ff      (bad)
+          Converts the ascii character c (using base n1) to its 
+          binary equivalent n2, accompanied by a true flag.  If the 
+          conversion is invalid, leaves only a false flag.
+
+ DLIST
+          List the names of the dictionary entries in the CONTEXT 
+          vocabulary.
+
+ DLITERAL      d  ---  d           (executing)
+               d  ---              (compiling)         Immediate
+          If compiling, compile a stack double number into a literal.
+          Later execution of the definition containing the literal
+          will push it to the stack.  If executing, the number will
+          remain on the stack.
+
+ DMINUS        d1  ---  d2
+          Convert d1 to its double number two's complement.
+
+ DO             n1  n2  ---        (execute)
+               addr  n  ---        (compile)
+          Occurs in a colon-definition in the form:
+                    DO  ...  LOOP
+                    DO  ...  +LOOP
+          At run-time, DO begins a sequence with repetitive 
+          execution controlled by a loop limit n1 and an index with 
+          initial value n2.  DO removes these from the stack.  Upon 
+          reaching LOOP the index is incremented by one.  Until the 
+          new index equals or exceeds the limit, execution loops 
+          back to just after DO; otherwise the loop parameters are 
+          discarded and execution continues ahead.  Both n1 and n2 
+          are determined at run-time and may be the result of other 
+          operations.  Within a loop 'I' will copy the current value 
+          of the index to the stack.  See I, LOOP, +LOOP, LEAVE.
+
+          When compiling within the colon-definition, DO compiles 
+          (DO), leaves the following address addr and n for later 
+          error checking.
+
+ DOES>
+          A word which defines the run-time action within a high-
+          level defining word.  DOES> alters the code field and 
+          first parameter of the new word to execute the sequence of 
+          compiled word addresses following DOES>.  Used in 
+          combination with <BUILDS.  When the DOES> part executes it 
+          begins with the address of the first parameter of the new 
+          word on the stack.  This allows interpretation using this 
+          area or its contents.  Typical uses include the Forth 
+          assembler, multi-dimensional arrays, and compiler 
+          generation.
+
+ DP            ---  addr
+          A user variable, the dictionary pointer, which contains 
+          the address of the next free memory above the dictionary.  
+          The value may be read by HERE and altered by ALLOT.
+
+ DPL           ---  addr
+          A user variable containing the number of digits to the 
+          right of the decimal on double integer input.  It may also 
+          be used to hold output column location of a decimal point, 
+          in user generated formatting.  The default value on single 
+          number input is -1.
+
+ DR0      Installation dependent commands to select disc drives, by 
+ DR1      presetting OFFSET.  The contents of OFFSET is added to the 
+          block number in BLOCK to allow for this selection.  Offset 
+          is suppressed for error text so that it may always 
+          originate from drive 0.
+
+ DROP          n  ---
+          Drop the number from the stack.
+
+ DUMP          addr  n  ---
+          Print the contents of n memory locations beginning at addr.
+          Both addresses and contents are shown in the current numeric
+          base.
+
+ DUP           n  ---  n  n
+          Duplicate the value on the stack.
+
+ ELSE          addr1  n1  ---  addr2  n2  (compiling)  Immediate,C2
+          Occurs within a colon-definition in the form:
+                    IF  ...  ELSE  ...  ENDIF
+          At run-time, ELSE executes after the true part following 
+          IF.  ELSE forces execution to skip over the following 
+          false part and resumes execution after the ENDIF.  It has 
+          no stack effect.
+
+          At compile-time ELSE emplaces BRANCH reserving a branch 
+          offset, leaves the address addr2 and n2 for error testing.  
+          ELSE also resolves the pending forward branch from IF by 
+          calculating the offset from addr1 to HERE and storing at 
+          addr1.
+
+ EMIT          c  ---
+          Transmit ascii character c to the selected output device.  
+          OUT is incremented for each character output.
+
+ EMPTY-BUFFERS
+          Mark all block-buffers as empty, not necessarily affecting 
+          the contents.  Updated blocks are not written to the disc.  
+          This is also an initialisation procedure before first use 
+          of the disc.
+
+ ENCLOSE       addr1  c  ---  addr1  n1  n2  n3
+          The text scanning primitive used by WORD.  From the text 
+          address addr1 and an ascii delimiting character c, is 
+          determined the byte offset to the first non-delimiting 
+          character n1, the offset to the first delimiter after the 
+          text n2, and the offset to the first character not included.
+          This procedure will not process past an ascii 'null',
+          treating it as an unconditional delimiter.
+
+ END
+          This is an 'alias' or duplicate definition for UNTIL.
+
+ ENDIF         addr1  n  ---       (compile)
+          Occurs in a colon-definition in the form:
+                    IF  ...  ENDIF
+                    IF  ...  ELSE  ...  ENDIF
+          At run-time, ENDIF serves only as the destination of a 
+          forward branch from IF or ELSE.  It marks the conclusion 
+          of the conditional structure.  THEN is another name for 
+          ENDIF.  Both names are supported in fig-FORTH.  See also 
+          IF and ELSE.
+
+          At compile-time, ENDIF computes the forward branch offset 
+          from addr to HERE and stores it at addr.  n is used for 
+          error tests.
+
+ ERASE         addr  n  ---
+          Clear a region of memory to zero from addr over n addresses.
+
+ ERROR         line  ---  in  blk
+          Execute error notification and restart of system.  WARNING 
+          is first examined.  If 1, the text of line n, relative to 
+          screen 4 of drive 0 is printed.  This line number may be 
+          positive or negative, and beyond just screen 4.  If 
+          WARNING=0, n is just printed as a message number (non-disc 
+          installation).  If WARNING is -1, the definition (ABORT) 
+          is executed, which executes the system ABORT.  The user may
+          cautiously modify this execution by altering (ABORT).  
+          fig-FORTH saves the contents of IN and BLK to assist in 
+          determining the location of the error.  Final action is 
+          execution of QUIT.
+
+ EXECUTE       addr  ---
+          Execute the definition whose code field address is on the 
+          stack.  The code field address is also called the 
+          compilation address.
+
+ EXPECT        addr  count  ---
+          Transfer characters from the terminal to address, until a 
+          "return" or the count of characters have been received.  
+          One or more nulls are added at the end of the text.
+
+ FENCE         ---  addr
+          A user variable containing an address below which 
+          FORGETting is trapped.  To forget below this point the 
+          user must alter the contents of FENCE.
+
+ FILL          addr  quan  b  ---
+          Fill memory at the address with the specified quantity of 
+          bytes b.
+
+ FIRST         ---  n
+          A constant that leaves the address of the first (lowest) 
+          block buffer.
+
+ FLD           ---  addr
+          A user variable for control of number output field width.  
+          Presently unused in fig-FORTH.
+
+ FORGET
+          Executed in the form:
+                    FORGET  cccc
+          Deletes definition named cccc from the dictionary with all 
+          entries physically following it.  In fig-FORTH, an error 
+          message will occur if the CURRENT and CONTEXT vocabularies 
+          are not currently the same.
+
+ FORTH
+          The name of the primary vocabulary.  Execution makes FORTH 
+          the CONTEXT vocabulary.  Until additional user 
+          vocabularies are defined, new user definitions become a 
+          part of FORTH.  FORTH is immediate, so it will execute 
+          during the creation of a colon-definition, to select this 
+          vocabulary at compile-time.
+
+ HERE          ---  addr
+          Leave the address of the next available dictionary 
+          location.
+
+ HEX
+          Set the numeric conversion base to sixteen (hexadecimal).
+
+ HLD           ---  addr
+          A user variable that holds the address of the latest 
+          character of text during numeric output conversion.
+
+ HOLD          c  ---
+          Used between <# and #> to insert an ascii character into a 
+          pictured numeric output string.  e.g. 2E HOLD will place a 
+          decimal point.
+
+ I             ---  n
+          Used within a DO-LOOP to copy the loop index to the stack.  
+          Other use is implementation dependent.  See R.
+
+ ID.           addr ---
+          Print a definition's name from its name field address.
+
+ IF            f  ---              (run-time)
+                  ---  addr  n     (compile)
+          Occurs in a colon definition in the form:
+                    IF  (tp)  ...  ENDIF
+                    IF  (tp)  ...  ELSE  (fp)  ...  ENDIF
+          At run-time, IF selects execution based on a boolean flag.  
+          If f is true (non-zero), execution continues ahead thru 
+          the true part.  If f is false (zero), execution skips till 
+          just after ELSE to execute the false part.  After either 
+          part, execution resumes after ENDIF.  ELSE and its false 
+          part are optional; if missing, false execution skips to 
+          just after ENDIF.
+
+          At compile-time IF compiles 0BRANCH and reserves space for 
+          an offset at addr.  addr and n are used later for resolution
+          of the offset and error testing.
+
+ IMMEDIATE
+          Mark the most recently made definition so that when 
+          encountered at compile time, it will be executed rather 
+          than being compiled. i.e. the precedence bit in its header 
+          is set.  This method allows definitions to handle unusual 
+          compiling situations, rather than build them into the 
+          fundamental compiler.  The user may force compilation of 
+          an immediate definition by preceding it with [COMPILE].
+
+ IN            ---  addr
+          A user variable containing the byte offset within the 
+          current input text buffer (terminal or disc) from which 
+          the next text will be accepted.  WORD uses and moves the 
+          value of IN.
+
+ INDEX         from  to  ---
+          Print the first line of each screen over the range from, 
+          to.  This is used to view the comment lines of an area of 
+          text on disc screens.
+
+ INTERPRET
+          The outer text interpreter which sequentially executes or 
+          compiles text from the input stream (terminal or disc) 
+          depending on STATE.  If the word name cannot be found after
+          a search of CONTEXT and then CURRENT it is converted to a
+          number according to the current base.  That also failing,
+          an error message echoing the name with a " ?" will be given.
+
+          Text input will be taken according to the convention for 
+          WORD.  If a decimal point is found as part of a number, a 
+          double number value will be left.  The decimal point has 
+          no other purpose than to force this action.  See NUMBER.
+
+ KEY           ---  c
+          Leave the ascii value of the next terminal key struck.
+
+ LATEST        ---  addr
+          Leave the name field address of the topmost word in the 
+          CURRENT vocabulary.
+
+ LEAVE
+          Force termination of a DO-LOOP at the next opportunity by 
+          setting the loop limit to the current value of the index.  
+          The index itself remains unchanged, and execution proceeds 
+          normally until LOOP or +LOOP is encountered.
+
+ LFA           pfa  ---  lfa
+          Convert the parameter field address of a dictionary 
+          definition to its link field address.
+
+ LIMIT         ---  n
+          A constant leaving the address just above the highest 
+          memory available for a disc buffer.  Usually this is the 
+          highest system memory.
+
+ LIST          n  ---
+          Display the ascii text of screen n on the selected output 
+          device.  SCR contains the screen number during and after 
+          this process.
+
+ LIT           ---  n
+          Within a colon-definition, LIT is automatically compiled 
+          before each 16 bit literal number encountered in input 
+          text.  Later execution of LIT causes the contents of the 
+          next dictionary address to be pushed to the stack.
+
+ LITERAL       n  ---    (compiling)
+          If compiling, then compile the stack value n as a 16 bit 
+          literal.  This definition is immediate so that it will 
+          execute during a colon definition.  The intended use is:
+                    : xxx   [ calculate ]  LITERAL  ;
+          Compilation is suspended for the compile time calculation 
+          of a value.  Compilation is resumed and LITERAL compiles 
+          this value.
+
+ LOAD          n  ---
+          Begin interpretation of screen n.  Loading will terminate 
+          at the end of the screen or at ;S.  See ;S and -->.
+
+ LOOP          addr  n  ---        (compiling)
+          Occurs in a colon-definition in the form:
+                    DO  ...  LOOP
+          At run-time, LOOP selectively controls branching back to 
+          the corresponding DO based on the loop index and limit.  
+          The  loop index is incremented by one and compared to the 
+          limit.  The branch back to DO occurs until the index equals
+          or exceeds the limit; at that time, the parameters are
+          discarded and execution continues ahead.
+
+          At compile-time, LOOP compiles (LOOP) and uses addr to 
+          calculate an offset to DO.  n is used for error testing.
+
+ M*            n1  n2  ---  d
+          A mixed magnitude math operation which leaves the double 
+          number signed product of two signed numbers.
+
+ M/            d  n1  ---  n2  n3
+          A mixed magnitude math operator which leaves the signed 
+          remainder n2 and signed quotient n3, from a double number 
+          dividend and divisor n1.  The remainder takes its sign 
+          from the dividend.
+
+ M/MOD         ud1  u2  ---  u3  u4
+          An unsigned mixed magnitude math operation which leaves a 
+          double quotient ud4 and remainder u3, from a double 
+          dividend ud1 and single divisor u2.
+
+ MAX           n1  n2  ---  max
+          Leave the greater of two numbers.
+
+ MESSAGE       n  ---
+          Print on the selected output device the text of line n 
+          relative to screen 4 of drive 0.  n may be positive or 
+          negative.  MESSAGE may be used to print incidental text 
+          such as report headers.  IF WARNING is zero, the message 
+          will simply be printed as a number (disc-unavailable).
+
+ MIN           n1  n2  ---  min
+          Leave the smaller of two numbers.
+
+ MINUS         n1  ---  n2
+          Leave the two's complement of a number.
+
+ MOD           n1  n2  ---  mod
+          Leave the remainder of n1/n2, with the same sign as n1.
+
+ MON
+          Exit to the system monitor, leaving a re-entry to Forth, 
+          if possible.
+
+ MOVE          addr1  addr2  n  ---
+          Move the contents of n memory cells (16 bit contents) 
+          beginning at addr1 into n cells beginning at addr2.  The 
+          contents of addr1 is moved first.  This definition is 
+          appropriate on word addressing computers.
+
+ NEXT
+          This is the inner interpreter that uses the interpretive 
+          pointer IP to execute compiled Forth definitions.  It is 
+          not directly executed but is the return point for all code 
+          procedures.  It acts by fetching the address pointed by 
+          IP, storing this value in register W.  It then jumps to 
+          the address pointed to by W.  W points to the code field 
+          of a definition which contains the address of the code 
+          which executes for that definition.  This usage of indirect
+          threaded code is a major contributor to the power,
+          portability, and extensibility of forth.  Locations of IP
+          and W are computer specific.
+
+ NFA           pfa  ---  nfa
+          Convert the parameter field address of a definition to its 
+          name field.
+
+ NUMBER        addr  ---  d
+          Convert a character string left at addr with a preceding 
+          count, to a signed double number, using the current base.  
+          If a decimal point is encountered in the text, its 
+          position will be given in DPL, but no other effect occurs.  
+          If numeric conversion is not possible, an error message 
+          will be given.
+
+ OFFSET        ---  addr
+          A user variable which may contain a block offset to disc 
+          drives.  The contents of OFFSET is added to the stack 
+          number by BLOCK.  Messages by MESSAGE are independent of 
+          OFFSET.  See BLOCK, DR0, DR1, MESSAGE.
+
+ OR            n1  n2  ---  or
+          Leave the bit-wise logical or of two 16 bit values.
+
+ OUT           ---  addr
+          A user variable that contains a value incremented by EMIT.  
+          The user may alter and examine OUT to control display 
+          formatting.
+
+ OVER          n1  n2  ---  n1  n2  n1
+          Copy the second stack value, placing it as the new top.
+
+ PAD           ---  addr
+          Leave the address of the text output buffer, which is a 
+          fixed offset above HERE.
+
+ PFA           nfa  ---  pfa
+          Convert the name field address of a compiled definition to 
+          its parameter field address.
+
+ POP
+          The code sequence to remove a stack value and return to 
+          NEXT.  POP is not directly executable, but is a forth re-
+          entry point after machine code.
+
+ PREV          ---  addr
+          A variable containing the address of the disc buffer most 
+          recently referenced.  The UPDATE command marks this buffer 
+          to be later written to disc.
+
+ PUSH
+          This code sequence pushes machine registers to the 
+          computation stack and returns to NEXT.  It is not directly 
+          executable, but is a Forth re-entry point after machine 
+          code.
+
+ PUT
+          This code sequence stores machine register contents over 
+          the topmost computation stack value and returns to NEXT.  
+          It is not directly executable, but is a Forth re-entry 
+          point after machine code.
+
+ QUERY
+          Input 80 characters of text (or until a "return") from the 
+          operators terminal.  Text is positioned at the address 
+          contained in TIB with IN set to zero.
+
+ QUIT
+          Clear the return stack, stop compilation, and return 
+          control to the operators terminal.  No message is given.
+
+ R             ---  n
+          Copy the top of the return stack to the computation stack.
+
+ R#            ---  addr
+          A user variable which may contain the location of an 
+          editing cursor, or other file related function.
+
+ R/W           addr  blk  f  ---
+          The fig-FORTH standard disc read-write linkage.  addr 
+          specifies the source or destination block buffer, blk is 
+          the sequential number of the referenced block; and f is a 
+          flag for f=0 write and f=1 for read.  R/W determines the 
+          location on mass storage, performs the read-write and 
+          performs any error checking.
+
+ R>            ---  n
+          Remove the top value from the return stack and leave it on 
+          the computation stack.  See >R and R.
+
+ R0            ---  addr
+          A user variable containing the initial location of the 
+          return stack.  Pronounced R-zero.  See RP!
+
+ REPEAT        addr  n  ---        (compiling)
+          Used within a colon-definition in the form:
+                    BEGIN  ...  WHILE  ...  REPEAT
+          At run-time, REPEAT forces an unconditional branch back to 
+          just after the corresponding BEGIN.
+
+          At compile-time, REPEAT compiles BRANCH and the offset 
+          from HERE to addr.  n is used for error testing.
+
+ ROT           n1  n2  n3  ---  n2  n3  n1
+          Rotate the top three values on the stack, bringing the 
+          third to the top.
+
+ RP!
+          A computer dependent procedure to initialise the return 
+          stack pointer from user variable R0.
+
+ S->D          n  ---  d
+          Sign extend a single number to form a double number.
+
+ S0            ---  addr
+          A user variable that contains the initial value for the 
+          stack pointer.  Pronounced S-zero.  See SP!
+
+ SCR           ---  addr
+          A user variable containing the screen number most recently 
+          referenced by LIST.
+
+ SIGN          n  d  ---  d
+          Stores an ascii "-" sign just before a converted numeric 
+          output string in the text output buffer when n is 
+          negative.  n is discarded, but double number d is 
+          maintained.  Must be between <# and #>.
+
+ SMUDGE
+          Used during word definition to toggle the "smudge bit" in 
+          a definition's name field.  This prevents an un-completed 
+          definition  from being found during dictionary searches, 
+          until compiling is completed without error.
+
+ SP!
+          A computer dependent procedure to initialise the stack 
+          pointer from S0.
+
+ SP@           ---  addr
+          A computer dependent procedure to return the address of 
+          the stack position to the top of the stack, as it was 
+          before SP@ was executed.  (e.g. 1 2 SP@ @ . . . would type 
+          2 2 1 )
+
+ SPACE
+          Transmit an ascii blank to the output device.
+
+ SPACES        n  ---
+          Transmit n ascii blanks to the output device.
+
+ STATE         ---  addr
+          A user variable containing the compilation state.  A non-
+          zero value indicates compilation.  The value itself may be 
+          implementation dependent.
+
+ SWAP          n1  n2  ---  n2  n1
+          Exchange the top two values on the stack.
+
+ TASK
+          A no-operation word which can mark the boundary between 
+          applications.  By forgetting TASK and re-compiling, an 
+          application can be discarded in its entirety.
+
+ THEN
+          An alias for ENDIF.
+
+ TIB           ---  addr
+          A user variable containing the address of the terminal 
+          input buffer.
+
+ TOGGLE        addr  b  ---
+          Complement the contents of addr by the bit pattern b.
+
+ TRAVERSE      addr1  n  ---  addr2
+          Move across the name field of a fig-FORTH variable length 
+          name field.  addr1 is the address of either the length 
+          byte or the last letter.  If n=1, the motion is toward 
+          high memory; if n= -1, the motion is toward low memory.  
+          The addr2 resulting is address of the other end of the 
+          name.
+
+ TRIAD         scr  ---
+          Display on the selected output device the three screens 
+          which include that numbered scr, beginning with a screen 
+          evenly divisible by three.  Output is suitable for source 
+          text records, and includes a reference line at the bottom 
+          taken from line 15 of screen 4.
+
+ TYPE          addr  count  ---
+          Transmit count characters from addr to the selected output 
+          device.
+
+ U*            u1  u2  ---  ud
+          Leave the unsigned double number product of two unsigned 
+          numbers.
+
+ U/            ud  u1  ---  u2  u3
+          Leave the unsigned remainder u2 and unsigned quotient u3 
+          from the unsigned double dividend ud and unsigned divisor 
+          u1.
+
+ UNTIL               f  ---        (run-time)
+               addr  n  ---        (compile)
+          Occurs within a colon-definition in the form:
+                    BEGIN  ...  UNTIL
+          At run-time, UNTIL controls the conditional branch back to 
+          the corresponding BEGIN.  If f is false, execution returns 
+          to just after begin; if true, execution continues ahead.
+
+          At compile-time, UNTIL compiles (0BRANCH) and an offset 
+          from HERE to addr.  n is used for error tests.
+
+ UPDATE
+          Marks the most recently referenced block (pointed to by 
+          PREV) as altered.  The block will subsequently be 
+          transferred automatically to disc should its buffer be 
+          required for storage of a different block.
+
+ USE           ---  addr
+          A variable containing the address of the block buffer to 
+          use next, as the least recently written.
+
+ USER          n  ---
+          A defining word used in the form:
+                    n  USER  cccc
+          which creates a user variable cccc.  The parameter field 
+          of cccc contains n as a fixed offset relative to the user 
+          pointer register UP for this user variable.  When cccc is 
+          later executed, it places the sum of its offset and the 
+          user area base address on the stack as the storage address 
+          of that particular variable.
+
+ VARIABLE
+          A defining word used in the form:
+                    n  VARIABLE  cccc
+          When VARIABLE is executed, it creates the definition cccc 
+          with its parameter field initialised to n.  When cccc is 
+          later executed, the address of its parameter field 
+          (containing n) is left on the stack, so that a fetch or 
+          store may access this location.
+
+ VOC-LINK      ---  addr
+          A user variable containing the address of a field in the 
+          definition of the most recently created vocabulary.  All 
+          vocabulary names are linked by these fields to allow 
+          control for FORGETting through multiple vocabularies.
+
+ VOCABULARY
+          A defining word used in the form:
+                    VOCABULARY  cccc
+          to create a vocabulary definition cccc.  Subsequent use of 
+          cccc will make it the CONTEXT vocabulary which is searched 
+          first by INTERPRET.  The sequence "cccc DEFINITIONS" will 
+          also make cccc the CURRENT vocabulary into which new 
+          definitions are placed.
+
+          In fig-FORTH, cccc will be so chained as to include all 
+          definitions of the vocabulary in which cccc is itself 
+          defined.  All vocabularies ultimately chain to Forth.  By 
+          convention, vocabulary names are to be declared IMMEDIATE.  
+          See VOC-LINK.
+
+ VLIST
+          List the names of the definitions in the context 
+          vocabulary.  "Break" will terminate the listing.
+
+ WARNING       ---  addr
+          A user variable containing a value controlling messages.  
+          If = 1, disc is present and screen 4 of drive 0 is the 
+          base location for messages.  If = 0, no disc is present 
+          and messages will be presented by number.  If = -1, 
+          execute (ABORT) for a user specified procedure.  See 
+          MESSAGE, ERROR.
+
+ WHILE               f  ---        (run-time)
+               ad1  n1  ---  ad1  n1  ad2  n2
+          Occurs in a colon-definition in the form:
+                    BEGIN  ...  WHILE  (tp)  ...  REPEAT
+          At run-time, WHILE selects conditional execution based on 
+          boolean flag f.  If f is true (non-zero), WHILE continues 
+          execution of the true part through to REPEAT, which then 
+          branches back to BEGIN.  If f is false (zero), execution 
+          skips to just after REPEAT, exiting the structure.
+
+          At compile time, WHILE emplaces (0BRANCH) and leaves ad2 
+          of the reserved offset.  The stack values will be resolved 
+          by REPEAT.
+
+ WIDTH         ---  addr
+          In fig-FORTH, a user variable containing the maximum 
+          number of letters saved in the compilation of a 
+          definition's name.  It must be 1 through 31, with a 
+          default value of 31.  The name character count and its 
+          natural characters are saved, up to the value in width.  
+          The value may be changed at any time within the above 
+          limits.
+
+ WORD          c  ---
+          Read the next text characters from the input stream being 
+          interpreted, until a delimiter c is found, storing the 
+          packed character string beginning at the dictionary buffer 
+          HERE.  WORD leaves the character count in the first byte, 
+          the characters, and ends with two or more blanks.  Leading 
+          occurances of c are ignored.  If BLK is zero, text is 
+          taken from the terminal input buffer, otherwise from the 
+          disc block stored in BLK.  See BLK, IN.
+
+ X
+          This is a psuedonym for the "null" or dictionary entry for 
+          a name of one character of ascii null.  It is the 
+          execution procedure to terminate interpretation of a line 
+          of text from the terminal or within a disc buffer, as both 
+          buffers always have a null at the end.
+
+ XOR           n1  n2  ---  xor
+          Leave the bitwise logical exclusive-or of two values.
+
+ [
+          Used in a colon-definition in the form:
+                    : xxx   [  words  ]   more  ;
+          Suspend compilation.  The words after [ are executed, not 
+          compiled.  This allows calculation or compilation exceptions
+          before resuming compilation with ].  See LITERAL, ].
+
+ [COMPILE]
+          Used in a colon-definition in the form:
+                    : xxx   [COMPILE]   FORTH  ;
+          [COMPILE] will force the compilation of an immediate 
+          definition, that would otherwise execute during compilation.
+          The above example will select the FORTH vocabulary when xxx
+          executes, rather than at compile time.
+
+ ]
+          Resume compilation, to the completion of a colon-definition.
+          See [.
+
+
+SCREEN EDITOR
+-------------
+Screen editors allow the entering and manipulation of source text.
+C64-FORTH actually has two built-in editors - a line editor and a
+full-screen editor.
+
+
+LINE EDITOR COMMANDS
+--------------------
+
+ EDITOR   Enter the editor vocabulary
+
+ n LIST   List screen n and select it for editing
+
+ n CLEAR  Clear contents of screen n by filling it with blanks and
+          select it for editing.
+
+ L        List current screen.
+
+ N        Select next screen (next).
+
+ B        Select previous screen (back).
+
+ n P ccc  Put text ccc into line n of current screen.
+
+ n H      Hold line n at PAD (used by system more often than by user).
+
+ n D      Delete line n but hold it in PAD.  Bottom line becomes blank
+          as lines n+1 to bottom line move up 1 line.
+
+ n R      Replace line n with the text in PAD.
+
+ n I      Insert the text from PAD at line n, moving the old line n
+          and following lines down.  Bottom line is lost.
+
+ n E      Erase line n with blanks.
+
+ n S      Spread at line n.  n and subsequent lines are move down 1
+          line and line n becomes blank.  Bottom line is lost.
+
+
+FULL-SCREEN EDITOR COMMANDS (C64-FORTH)
+---------------------------------------
+
+ <back-arrow>  n ---
+          Enter the full-screen editor and edit screen n.
+
+ <run/stop>    ---
+          Exit the full-screen editor saving any changes to disk.
+
+ <shift run/stop>  ---
+          Exit the full-screen editor without saving changes.
+
+
+VIC-FORTH LINE EDITOR
+---------------------
+
+Source code for a VIC-FORTH line editor that is fully compatible with
+the C64-FORTH editor is provided below.  The definitions may be keyed
+in manually then saved to cassette with CSAVE.
+
+The definitions are based on a disassembly of the C64-FORTH line
+editor.  Some changes were necessary for VIC-FORTH use.
+
+
+ FORTH DEFINITIONS DECIMAL
+ VOCABULARY EDITOR  IMMEDIATE
+ EDITOR DEFINITIONS
+
+ : -MOVE  LINE C/L CMOVE UPDATE ;
+
+ : H  LINE PAD 1+ C/L DUP PAD C! CMOVE ;
+
+ : E  LINE C/L BLANKS UPDATE ;
+
+ : S  DUP 1- 14 DO FORTH I LINE I 1+ -MOVE
+   -1 +LOOP E ;
+
+ : D  DUP H 15 DUP ROT DO FORTH I 1+ LINE
+   I -MOVE LOOP E ;
+
+ : R  PAD 1+ SWAP -MOVE ;
+
+ : I  DUP S R ;
+
+ : P  94 TEXT R ;
+
+ : L  SCR @ LIST ;
+
+ : B  SCR 1-! ;
+
+ : N  SCR 1+! ;
+
+ : CLEAR  DUP SCR ! B/SCR * B/SCR 0 DO DUP
+   BLOCK B/BUF BLANKS UPDATE 1+ LOOP DROP ;
+
+ : ZERO  DUP SCR ! B/SCR * B/SCR 0 DO DUP
+   BLOCK B/BUF ERASE UPDATE 1+ LOOP DROP ;
+
+ : COPY  FLUSH B/SCR * OFFSET @ + SWAP B/SCR *
+   B/SCR OVER + SWAP DO DUP FORTH I BLOCK
+   2- ! 1+ UPDATE LOOP DROP FLUSH ;
+
+ : BACKUP  FLUSH HPOUT ." DI=0" HPOFF DISC ;
+
+ : SCREENS  0 DO OVER FORTH I + OVER FORTH
+   I + COPY LOOP DROP DROP ;
+
+ : PROGRAM  0 166 60 SCREENS ;
+
+ : FREE  B/SCR * 1+ SWAP B/SCR * DO FORTH I
+   BLOCK @ 0= IF FORTH I B/SCR / . THEN B/SCR
+   +LOOP ;
+
+ : VIDEO  CR HPOFF 4 CLOSE ;
+
+ : PAPER  VIDEO 0 0 NAME 4 DUP 0 OPEN DUP
+   ?ERROR 4 HPOUT DUP ?ERROR ;
+
+ FORTH DEFINITIONS
+
+ : WHERE  DUP SCR !  ."  SCR # " DECIMAL .
+   CR C/L /MOD LINE 2DUP SWAP TYPE 18 EMIT
+   OVER + C/L ROT - TYPE CR [COMPILE]
+   EDITOR SP! QUIT ;
+
+
+FORTH 6502 ASSEMBLER
+--------------------
+
+Datatronic forth includes a 6502 forth assembler.  This allows users
+to write words directly in machine-code allowing faster execution.
+
+The assembler in built into the C64-FORTH cartridge; VIC-FORTH users
+must first LOAD in the assembler before use.
+
+The assembler uses register names and conventions which largely follow
+that depicted in the Fig-Forth Installation Manual.
+
+Notation:
+
+  Forth assembler uses 'reverse Polish' syntax e.g.
+
+  conventional assembler        Forth assembler
+
+  ROL   A                        .A         ROL,
+  LDY   #1                       1 #        LDY,
+  STA   DATA,X                   DATA ,X    STA,
+  CMP   DATA,Y                   DATA ,Y    CMP,
+  ADC   (06,X)                   06 X)      ADC,
+  STA   (POINT),Y                POINT )Y   STA,
+  JMP   (VECTOR)                 VECTOR )   JMP,
+
+Addressing modes:
+
+  Symbol     Addressing mode        Operand
+
+  none       implied                none
+  .A         accumulator            none
+  #          immediate              8 bits only
+  ,X         indexed X              z-page or absolute
+  ,Y         indexed Y              z-page or absolute
+  X)         indexed indirect X     z-page only
+  )Y         indirect indexed Y     z-page only
+  )          indirect               absolute only
+  none       memory                 z-page or absolute
+
+Opcode mnemonics:
+
+  ADC,  CLI,  DEY,  LDA,  PHP,  SBC,  TAX,
+  AND,  CLV,  EOR,  LDX,  PLA,  SEC,  TAY,
+  ASL,  CMP,  INC,  LDY,  PLP,  SED,  TSX,
+  BIT,  CPX,  INX,  LSR,  ROL,  SEI,  TXA,
+  BRK,  CPY,  INY,  NOP,  ROR,  STA,  TXS,
+  CLC,  DEC,  JMP,  ORA,  RTI,  STX,  TYA,
+  CLD,  DEX,  JSR,  PHA,  RTS,  STY,
+
+CPU condition flags:
+
+  These must precede conditional structures (IF, ELSE, WHILE, UNTIL,)
+
+  CS    carry flag = 1
+  CC    carry flag = 0
+  VS    overflow flag = 1
+  VC    overflow flag = 0
+  MI    negative flag = 1
+  PL    negative flag = 0
+  EQ    zero flag = 1
+  NE    zero flag = 0
+
+  NOT   reverses a previous condition flag
+
+Conditional structures:
+
+  Used in conjunction with the cpu condition flags
+
+  IF,         UNTIL,
+  THEN,       AGAIN,
+  ELSE,       WHILE,
+  BEGIN,      REPEAT,
+
+Forth registers, addresses, routines:
+
+  IP       address of the Interpretive Pointer in zero-page.
+  W        address of the code field pointer in zero-page.
+  N        address of an 8 byte scratch area in zero-page.
+  BOT      address of low  byte of a 16-bit stack item with ,X
+           address mode.  X register locates computation stack in
+           zero-page, relative to address $0000.
+  XSAVE    address of a temporary register for X in zero-page.
+  UP       address of the User Pointer in zero-page.
+  SEC      address the second stack item as for BOT.
+  R        address of low byte of return stack with ,X mode preset.
+  PUT      address of routine to replace the present computation
+           stack high byte from accumulator, and put from the machine
+           stack one byte which replaces the present low stack byte;
+           continue on to NEXT.
+  PUSH     address of routine to repeat PUT but creating a new bottom
+           item on the computation stack.
+  PUSH0A   address of routine to place the accumulator at the low
+           stack byte, with the high byte zero.
+  POP      address of routine to remove one 16-bit item from
+           computation stack.
+  POPTWO   address of routine to remove two 16-bit items from
+           computation stack.
+  BINARY   address of routine to pop one item and PUT the accumulator
+           (high) and ML stack (low) over what was second.
+  SETUP    address of a routine to move 16-bit items to zero-page.
+           Item quantity is in accumulator.
+  NEXT     address of the inner-interpreter, to which all code
+           routines must return.  NEXT fetches indirectly referred to
+           IP the next compiled FORTH word address.  It then jumps
+           indirectly to pointed machine code.
+
+Some examples:
+
+CODE marks the beginning of a code definition and END-CODE finishes
+it. (note: in Datatronic forth, CODE automatically changes the
+number base to HEX; when the definition is finished the previous
+base is restored).
+
+   CODE NOOP  NEXT JMP,  END-CODE
+
+The above definition does nothing.  Functionally, it is equivalent
+to  : NOOP ;  albeit much faster.  In forth, all code definitions
+must end by jumping to the address NEXT (or to a routine that jumps
+to NEXT).
+
+   CODE ONE  1 # LDA,  PUSH0A JMP,  END-CODE
+
+This simply pushes the number 1 onto the parameter stack.
+
+For a detailed description and use of a 6502 forth assembler, please
+refer to the following article by W. Ragsdale.
+
+   http://project64.c64.org/misc/64forthm.zip
+
+
+ERROR MESSAGES (C64-FORTH)
+--------------------------
+
+  1 - Empty stack
+  2 - Dictionary full
+  3 - Has incorrect addressing mode
+  4 - Isn't unique
+  5 -
+  6 - Disc Range?
+  7 - Full stack
+  8 - Disc error!
+  9 - Not 8-bit value or address
+ 10 -
+ 11 -
+ 12 - Illegal value - reenter
+ 13 - Too large - reenter
+ 14 -
+ 15 - Datatronic AB (c) 1982 etc.
+ 16 -
+ 17 - Compilation only, use in definition
+ 18 - Execution only
+ 19 - Conditionals not paired
+ 20 - Definition not finished
+ 21 - In protected dictionary
+ 22 - Use only when loading
+ 23 - Off current editing screen
+ 24 - Transfer aborted
+ 25 - Too many files
+ 26 - File already open
+ 27 - File not open
+ 28 - File not found
+ 29 - Device not present
+ 30 - Not input file
+ 31 - Not output file
+ 32 - Missing file name
+ 33 - Illegal device number
+
+
+Vic-Forth Compatible Editor And 6502 Assembler Source
+-----------------------------------------------------
+VIC-FORTH does not have the screen editor or 6502 assembler commands
+built into the cartridge - these must be LOADed from the system disk.
+
+For those lacking the system disk, the following compatible editor
+and assembler is provided.  To save users having to manually enter
+the definitions, two files are supplied - VEDASM.D64 (source code in
+C64 disk image format) and VEDASM.TAP (precompiled code in C64 TAPE
+format).  To load them, use the forth commands BOOT-UP or CLOAD
+respectively.
+
+
+SCR # 0 
+  0 ( VIC-FORTH COMPATIBLE EDITOR & ASSEMBLER )
+  1 A SCREEN LINE EDITOR AND 6502 ASSEMBLER FOR
+  2 DATATRONIC VIC-FORTH.
+  3 
+  4 BASED ON A DISASSEMBLY OF THE EDITOR/ASSEMBLER
+  5 BUILT INTO C64-FORTH.  PORTIONS (C) DATATRONIC
+  6
+  7 
+  8 
+  9 
+ 10 
+ 11 
+ 12 
+ 13 
+ 14 
+ 15 
+
+
+SCR # 1 
+  0 ( VIC-FORTH LOAD SCREEN )
+  1 FORTH DEFINITIONS DECIMAL
+  2 
+  3 CR ." LOADING EDITOR "  8 LOAD
+  4 CR ." LOADING ASSEMBLER "  20 LOAD
+  5 
+  6 
+  7 
+  8 
+  9 
+ 10 
+ 11 
+ 12 
+ 13 
+ 14 
+ 15 
+
+
+SCR # 4 
+  0 
+  1 EMPTY STACK
+  2 DICTIONARY FULL
+  3 HAS INCORRECT ADDRESSING MODE
+  4 ISN'T UNIQUE
+  5 
+  6 DISC RANGE?
+  7 FULL STACK
+  8 DISC ERROR!
+  9 NOT 8 BIT VALUE OR ADDRESS
+ 10 
+ 11 
+ 12 
+ 13 
+ 14 
+ 15 
+
+
+SCR # 5 
+  0 
+  1 COMPILATION ONLY, USE IN DEFINITION
+  2 EXECUTION ONLY
+  3 CONDITIONALS NOT PAIRED
+  4 DEFINITION NOT FINISHED
+  5 IN PROTECTED DICTIONARY
+  6 USE ONLY WHEN LOADING
+  7 OFF CURRENT EDITING SCREEN
+  8 TRANSFER ABORTED
+  9 
+ 10 
+ 11 
+ 12 
+ 13 
+ 14 
+ 15 
+
+
+SCR # 8 
+  0 ( VIC-FORTH LINE EDITOR )
+  1 FORTH DEFINITIONS DECIMAL
+  2 
+  3 VOCABULARY EDITOR  IMMEDIATE
+  4 
+  5 EDITOR DEFINITIONS
+  6 
+  7 : -MOVE  ( ADR N -- )
+  8   LINE C/L CMOVE UPDATE ;
+  9 
+ 10 : H  ( N -- )
+ 11   LINE PAD 1+ C/L DUP PAD C! CMOVE ;
+ 12 
+ 13 : E  ( N -- )
+ 14   LINE C/L BLANKS UPDATE ;
+ 15 -->
+
+
+SCR # 9 
+  0 ( VIC-FORTH LINE EDITOR )
+  1 
+  2 : S  ( N -- )
+  3   DUP 1- 14 DO FORTH I LINE I 1+ -MOVE
+  4   -1 +LOOP E ;
+  5 
+  6 : D  ( N -- )
+  7   DUP H 15 DUP ROT DO FORTH I 1+ LINE
+  8   I -MOVE LOOP E ;
+  9 
+ 10 : R  ( N -- )
+ 11   PAD 1+ SWAP -MOVE ;
+ 12 
+ 13 : I  ( N -- )
+ 14   DUP S R ;
+ 15 -->
+
+
+SCR # 10 
+  0 ( VIC-FORTH LINE EDITOR )
+  1 
+  2 : P  ( N -- )
+  3   94 TEXT R ;
+  4 
+  5 : L  ( N -- )
+  6   SCR @ LIST ;
+  7 
+  8 : B  ( N -- )
+  9   SCR 1-! ;
+ 10 
+ 11 : N  ( N -- )
+ 12   SCR 1+! ;
+ 13 -->
+ 14 
+ 15 
+
+
+SCR # 11 
+  0 ( VIC-FORTH LINE EDITOR )
+  1 
+  2 : CLEAR  ( N -- )
+  3   DUP SCR ! B/SCR * B/SCR 0 DO DUP BLOCK
+  4   B/BUF BLANKS UPDATE 1+ LOOP DROP ;
+  5 
+  6 : ZERO  ( N -- )
+  7   DUP SCR ! B/SCR * B/SCR 0 DO DUP BLOCK
+  8   B/BUF ERASE UPDATE 1+ LOOP DROP ;
+  9 
+ 10 : COPY  ( N1 N2 -- )
+ 11   FLUSH B/SCR * OFFSET @ + SWAP  B/SCR *
+ 12   B/SCR OVER + SWAP DO DUP FORTH I BLOCK
+ 13   2- ! 1+ UPDATE LOOP DROP FLUSH ;
+ 14 -->
+ 15 
+
+
+SCR # 12 
+  0 ( VIC-FORTH LINE EDITOR )
+  1 
+  2 : BACKUP  ( -- )
+  3   FLUSH HPOUT ." DI=0" HPOFF DISC ;
+  4 
+  5 : SCREENS  ( N1 N2 N3 -- )
+  6   0 DO OVER FORTH I + OVER FORTH I +
+  7   COPY LOOP DROP DROP ;
+  8 
+  9 : PROGRAM  ( -- )
+ 10   0 166 60 SCREENS ;
+ 11 -->
+ 12                                                                 
+ 13                                                                 
+ 14 
+ 15 
+
+
+SCR # 13 
+  0 ( VIC-FORTH LINE EDITOR )
+  1 
+  2 : FREE  ( -- )
+  3   B/SCR * 1+ SWAP B/SCR * DO FORTH I BLOCK
+  4   @ 0= IF FORTH I B/SCR / . THEN B/SCR
+  5   +LOOP ;
+  6 
+  7 : VIDEO  ( -- )
+  8   CR HPOFF 4 CLOSE ;
+  9 
+ 10 : PAPER  ( -- )
+ 11   VIDEO 0 0 NAME 4 DUP 0 OPEN DUP
+ 12   ?ERROR 4 HPOUT DUP ?ERROR ;
+ 13 -->
+ 14 
+ 15 
+
+
+SCR # 14 
+  0 ( VIC-FORTH LINE EDITOR )
+  1 
+  2 FORTH DEFINITIONS
+  3 
+  4 : WHERE
+  5   DUP SCR !  ."  SCR # " DECIMAL . CR
+  6   C/L /MOD LINE 2DUP SWAP TYPE 18 EMIT
+  7   OVER + C/L ROT - TYPE CR [COMPILE]
+  8   EDITOR SP! QUIT ;
+  9 
+ 10 
+ 11 
+ 12 
+ 13 
+ 14 
+ 15 
+
+
+SCR # 20 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 FORTH DEFINITIONS  DECIMAL
+  2 
+  3 VOCABULARY ASSEMBLER  IMMEDIATE
+  4 
+  5 ASSEMBLER DEFINITIONS  HEX
+  6 
+  7 0 VARIABLE MODE
+  8 
+  9 : MODE!  ( N -- ) MODE ! ;
+ 10 
+ 11 : ABS!  ( -- ) 2 MODE! ;
+ 12 
+ 13 : END-CODE
+ 14   CURRENT @ CONTEXT ! ?CSP BASE ! SMUDGE ;
+ 15 -->
+
+
+SCR # 21 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 : ERR  ( N -- ) ABS! ERROR ;
+  3 
+  4 : NZPAG?  ( N -- N F )
+  5   DUP 0FF00 AND ;
+  6 
+  7 : #  ( N -- N )
+  8   NZPAG? IF 9 ERR THEN 3 MODE! ;
+  9 
+ 10 : )  ( -- )
+ 11   9 MODE! ;
+ 12 
+ 13 : ,X  ( N -- N )
+ 14   NZPAG? IF 4 MODE! ELSE 8 MODE! THEN ;
+ 15 -->
+
+
+SCR # 22 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 : ,Y  ( N -- N )
+  3   NZPAG? IF 5 MODE! ELSE 0A MODE! THEN ;
+  4 
+  5 : X)  ( N -- N )
+  6   NZPAG? IF 9 ERR THEN 6 MODE! ;
+  7 
+  8 : )Y  ( N -- N )
+  9   NZPAG? IF 9 ERR THEN 7 MODE! ;
+ 10 
+ 11 : .A  ( -- )
+ 12   0 MODE! ;
+ 13 -->
+ 14 
+ 15 
+
+
+SCR # 23 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 : IMPLIED  <BUILDS C, DOES> C@ C, ;
+  3 
+  4 00 IMPLIED BRK,  18 IMPLIED CLC,  D8 IMPLIED CLD,
+  5 58 IMPLIED CLI,  B8 IMPLIED CLV,  CA IMPLIED DEX,
+  6 88 IMPLIED DEY,  E8 IMPLIED INX,  C8 IMPLIED INY,
+  7 EA IMPLIED NOP,  48 IMPLIED PHA,  08 IMPLIED PHP,
+  8 68 IMPLIED PLA,  28 IMPLIED PLP,  40 IMPLIED RTI,
+  9 60 IMPLIED RTS,  38 IMPLIED SEC,  F8 IMPLIED SED,
+ 10 78 IMPLIED SEI,  AA IMPLIED TAX,  A8 IMPLIED TAY,
+ 11 BA IMPLIED TSX,  8A IMPLIED TXA,  9A IMPLIED TXS,
+ 12 98 IMPLIED TYA,
+ 13 
+ 14 : JSR  ( ADR -- ) 20 C, , ;
+ 15 -->
+
+
+SCR # 24 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 0 VARIABLE OPCOD  -2 ALLOT
+  3 
+  4 6DFF ,  6965 ,  797D ,  7161 ,  FF75 ,  FFFF ,
+  5 252D ,  3D29 ,  2139 ,  3531 ,  FFFF ,  0E0A ,
+  6 FF06 ,  FFFF ,  FFFF ,  FF16 ,  FFFF ,  242C ,
+  7 FFFF ,  FFFF ,  FFFF ,  FFFF ,  CDFF ,  C9C5 ,
+  8 D9DD ,  D1C1 ,  FFD5 ,  FFFF ,  E4EC ,  FFE0 ,
+  9 FFFF ,  FFFF ,  FFFF ,  CCFF ,  C0C4 ,  FFFF ,
+ 10 FFFF ,  FFFF ,  FFFF ,  C6CE ,  DEFF ,  FFFF ,
+ 11 D6FF ,  FFFF ,  4DFF ,  4945 ,  595D ,  5141 ,
+ 12 FF55 ,  FFFF ,  E6EE ,  FEFF ,  FFFF ,  F6FF ,
+ 13 FFFF ,  4CFF ,  FFFF ,  FFFF ,  FFFF ,  6CFF ,
+ 14 FFFF ,  A5AD ,  BDA9 ,  A1B9 ,  B5B1 ,  FFFF ,
+ 15 -->
+
+
+SCR # 25 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1                                                                 
+  2 AEFF ,  A2A6 ,  BEFF ,  FFFF ,  FFFF ,  FFB6 ,
+  3 FFFF ,  A5AD ,  BDA9 ,  A1B9 ,  B5B1 ,  FFFF ,
+  4 AEFF ,  A2A6 ,  BEFF ,  FFFF ,  FFFF ,  FFB6 ,
+  5 A4AC ,  BCA0 ,  FFFF ,  B4FF ,  FFFF ,  4E4A ,
+  6 FF46 ,  FF5E ,  FFFF ,  FF56 ,  FFFF ,  050D ,
+  7 1D09 ,  0119 ,  1511 ,  FFFF ,  2E2A ,  FF26 ,
+  8 FF3E ,  FFFF ,  FF36 ,  6AFF ,  666E ,  7EFF ,
+  9 FFFF ,  76FF ,  FFFF ,  EDFF ,  E9E5 ,  F9FD ,
+ 10 F1E1 ,  FFF5 ,  FFFF ,  858D ,  9DFF ,  8199 ,
+ 11 9591 ,  FFFF ,  8EFF ,  FF86 ,  FFFF ,  FFFF ,
+ 12 FFFF ,  FF96 ,  848C ,  FFFF ,  FFFF ,  94FF ,
+ 13 FFFF ,
+ 14 
+ 15 -->
+
+
+SCR # 26 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 : I@
+  3   MODE @ SWAP 0B * OPCOD + + C@ ;
+  4 
+  5 : PUTC
+  6   I@ C,  MODE @ IF
+  7     MODE @ 1 =  MODE @ 4 =  MODE @ 5 =
+  8     MODE @ 9 =  OR  OR  OR
+  9     IF , ELSE C, THEN  THEN
+ 10   ABS! ;
+ 11 
+ 12 -->
+ 13 
+ 14 
+ 15 
+
+
+SCR # 27 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 : IS
+  3   <BUILDS C, DOES> C@
+  4   BEGIN  DUP I@ 0FF =  WHILE
+  5     MODE @ 8 = IF  4 MODE!  ELSE
+  6       MODE @ 0A = IF  5 MODE !  ELSE
+  7         MODE @ 2 = IF  1 MODE!  ELSE
+  8           3 ERR  THEN
+  9         THEN
+ 10       THEN
+ 11     REPEAT
+ 12   MODE @ 2 = IF  OVER  NZPAG?
+ 13     IF 1 MODE! THEN  DROP  THEN
+ 14   PUTC ;
+ 15 -->
+
+
+SCR # 28 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 00 IS ADC,   01 IS AND,   02 IS ASL,   03 IS BIT,
+  3 04 IS CMP,   05 IS CPX,   06 IS CPY,   07 IS DEC,
+  4 08 IS EOR,   09 IS INC,   0A IS JMP,   0B IS LDA,
+  5 0C IS LDX,   0D IS LDY,   0E IS LSR,   0F IS ORA,
+  6 10 IS ROL,   11 IS ROR,   12 IS SBC,   13 IS STA,
+  7 14 IS STX,   15 IS STY,
+  8 
+  9 : NOT  ( N1 -- N2 )
+ 10   20 XOR ;
+ 11 
+ 12 90 CONSTANT CC  B0 CONSTANT CS  50 CONSTANT VC
+ 13 70 CONSTANT VS  30 CONSTANT MI  10 CONSTANT PL
+ 14 F0 CONSTANT EQ  D0 CONSTANT NE
+ 15 -->
+
+
+SCR # 29 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 : IF,
+  3   NOT C, 0 C, HERE ;
+  4 
+  5 : THEN,
+  6   HERE OVER - SWAP 1- C! ;
+  7 
+  8 : ELSE,
+  9   CLV, VS IF, SWAP THEN, ;
+ 10 
+ 11 : BEGIN,
+ 12   HERE ;
+ 13 
+ 14 -->
+ 15 
+
+
+SCR # 30 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 : UNTIL,
+  3   NOT C, HERE 1+ - C, ;
+  4 
+  5 : AGAIN,
+  6   JMP, ;
+  7 
+  8 : WHILE,
+  9   IF, ;
+ 10 
+ 11 : REPEAT,
+ 12   SWAP JMP, THEN, ;
+ 13 
+ 14 -->
+ 15 
+
+
+SCR # 31 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 ' LIT 13 + ( A059 )  CONSTANT PUT
+  3 ' LIT 11 + ( A057 )  CONSTANT PUSH
+  4 ' SP@ 1 +  ( A3B0 )  CONSTANT PUSH0A
+  5 ' (DO) 0E + ( A170 )  CONSTANT POP
+  6 ' (DO) 0C + ( A16E )  CONSTANT POPTWO
+  7 ' AND  9 +  ( A377 )  CONSTANT BINARY
+  8 ' EXECUTE NFA 11 - ( A086 )  CONSTANT SETUP
+  9 ' LIT 18 + ( A05E )  CONSTANT NEXT
+ 10   84 CONSTANT  IP
+ 11   87 CONSTANT  W
+ 12   7C CONSTANT  N
+ 13   8B CONSTANT  XSAVE
+ 14   89 CONSTANT  UP
+ 15 -->
+
+
+SCR # 32 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 : BOT  0 ,X ;
+  3 
+  4 : SEC  2 ,X ;
+  5 
+  6 : R  0101 ,X ;
+  7 
+  8 FORTH DEFINITIONS
+  9 
+ 10 : ;CODE
+ 11   ?CSP COMPILE (;CODE) [COMPILE] [
+ 12   BASE @ HEX !CSP [COMPILE] ASSEMBLER
+ 13   ASSEMBLER ABS! ;  IMMEDIATE
+ 14 -->
+ 15 
+
+
+SCR # 33 
+  0 ( VIC-FORTH 6502 ASSEMBLER )
+  1 
+  2 : CODE
+  3   ?EXEC [COMPILE] ASSEMBLER
+  4   ASSEMBLER ABS! CREATE BASE @ HEX
+  5   !CSP ; IMMEDIATE
+  6 
+  7 FORTH  DECIMAL
+  8 
+  9 
+ 10 
+ 11 
+ 12 
+ 13 
+ 14 
+ 15 
+
+

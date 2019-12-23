@@ -1,0 +1,11 @@
+Music Machine
+=============
+
+Cartridge uses Ultimax Mode memory  $f000-$ffff.
+
+Screen memory is set to $0400 and Character Set to $3000.
+In Ultimax mode the $3000 address is remapped to the ROM at $f000,
+thus the first $200 bytes of the cartridge ROM should be used by
+the emulator as character set.
+
+This doesn't work in the latest test version of CCS64.

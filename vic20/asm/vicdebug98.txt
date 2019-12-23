@@ -1,0 +1,154 @@
+********************************************************************************
+*                                                                              *
+*                               VIC DEBUG 98                                   *
+*                                                                              *
+*                         < Flat Earth Software >                              *
+*			  (not affiliated with The Flat Earth Society)	       *
+*                                                                              *
+*        "Spreading foreign objects to the four corners of the Earth"          *
+*                                                                              *
+********************************************************************************
+
+	For years, the VIC-20 has been waiting for someone to write that "major
+program" that will cause it's owners to panic as they frantically dig around in 
+attics, basements and closets, trying to remember where they put the dang thing.
+	Until that day comes, those of us who still use ours will just have to
+wait. For those who prefer to use their spare time writing 6502 machine code,
+Flat Earth Software (not affiliated with The Flat Earth Society) has produced a
+program to make things a bit easier.
+	Vic Debug 98 is a machine language monitor based on MS-DOS's DEBUG
+program. It occupies the plug-in-ROM section of memory @ $A000. It is called by
+entering SYS 40960 on the command line. It uses most of the commands in DEBUG
+and functions about the same. Anyone familiar with DEBUG shouldn't have too much
+trouble. The VIC KERNEL labels have been included in the program, so it is
+possible to type 'JSR CHROUT' and have things work correctly. They will also be
+displayed when unassembling. Some help information is available when running by
+typing ? . This program tries to preserve the memory state of the VIC-20 as much
+as possible when called and uses the BASIC input buffer for most of its
+variables, but some VIC memory was used. Locations $00FB - $00FE, $030C - $0312
+and screen variables won't be preserved. The BRK address at $0316 - $0317 is
+changed when VICDEBUG is called, but is restored when exiting. If a file is
+loaded, load RAM locations will be used.
+
+	A description of commands is as follows.
+
+	A [adr]		Assemble at default beginning of BASIC RAM, at end of
+			previous assemble or from address given. Data can be
+			entered with DB command and can be hex, decimal, string
+			or character. The KERNEL subroutines can also be typed
+			in instead of their hex addresses.
+
+	B [adr]		Print BRK location. If address is given, set BRK to
+			start at that address.
+
+	C St1 End St2	Compare a range of bytes from start1 to end with those
+			beginning at start2. Any differences will be displayed.
+			The L operand can be used as in DEBUG to give a length
+			instead of an end position. The STOP key can be used to
+			interrupt a listing.
+
+	D [adr]		Dump memory to screen, displaying contents beginning
+			from end of last dump or from address given.
+
+	E adr [list]	Enter data directly into memory from list or start to
+			enter hex data beginning at address. List data can be
+			hex, decimal, string or character. One at a time data
+			entry is hex only and the + and - keys can be used to
+			move forward and back.
+
+	F St End List	Fill memory with data from list. Data can be hex,
+			decimal, string or character. The L operand can also
+			be used instead of an End position.
+
+	G adr		Go to address given and start executing code. The BRK
+			mnemonic must be used to stop execution.
+
+	H number	Hex to decimal to hex converter. The number must be less
+			than $10000 or 65536.
+
+	L [adr]		Load program into memory. The program will be loaded
+			into the start of user RAM or at address. Use the N
+			command to set a filename, V to set device and Z to
+			set 2nd address command; otherwise the defaults are
+			used.
+
+	M St End Dest	Move a block of memory from start - end to destination.
+			The L operand can be used here too.
+
+	N ["filename"]	Name set or verify.
+
+	Q		Quit.
+
+	R [Reg]		Register display or set. AC, XR, YR and SP can be set to
+			hex, decimal or character data. PC can only be set to
+			hex. The flags can be set or reset.
+
+	S St End List	Search memory for list data hex, dec, string or char.
+			The L operand works here.
+
+	T [adr]		Trace execution. If no address is given, 1 instruction
+			is executed. If there is an address, execute to address.
+			The STOP key can be used to break out of execution. The
+			T command will trace into a BRK opcode.
+
+	U [adr]		Unassemble 10 instructions from last U instruction or
+			from address. The KERNEL subroutine labels can be
+			displayed.
+
+	V [dev]		Set or confirm I/O device. Default is the tape recorder.
+
+	W Start End	Write file to I/O device. The L operand works here too.
+
+	Z [com]		Set or confirm 2nd address to I/O device. Default
+			command is 0.
+
+	? [com]		Display commands or detailed help about [com].
+
+
+	The BRK opcode functions differently when executing Go than when in the
+Trace mode. The Go BRK handler is used to end machine code programs and return
+to the VICDEBUG command line. In Trace mode, BRK will execute part of the VIC-20
+BRK/IRQ routine before branching to the BRK location stored at $0316-$0317. The
+VIC-20 routine also pushes AC, XR and YR onto the stack. Any BRK routine that
+you write will have to pop these 3 registers off the stack to in order to finish
+and return from interrupt correctly.
+
+
+	Write and Load errors will set and display the Status byte at $90.
+
+I/O Status
+-----------------------------------------------------------------------------
+ST		ST		Cassette	Serial		Tape
+bit		numeric		Read		Bus		verify
+position	value				R/W		+ load
+-----------------------------------------------------------------------------
+0		1		-		Time out	-
+-----------------------------------------------------------------------------
+1		2		-		Time out	-
+						read
+-----------------------------------------------------------------------------
+2		4		short block	-		short block
+-----------------------------------------------------------------------------
+3		8		long block	-		long block
+-----------------------------------------------------------------------------
+4		16		unrecover-	-		any mismatch
+				able read
+				error
+-----------------------------------------------------------------------------
+5		32		checksum	-		checksum
+				error				error
+-----------------------------------------------------------------------------
+6		64		end of file	EOI		-
+-----------------------------------------------------------------------------
+7		-128		end of tape	device not	end of tape
+						present
+-----------------------------------------------------------------------------
+
+
+	If you experience any annoying problems or quirks with this program, you
+might try to let me know. Send correspondence (or loose change) to Flat Earth
+Software, 43068 298th. St, Lesterville SD 57040, USA.
+
+
+
+			Without VIC, what would we do?

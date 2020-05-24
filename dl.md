@@ -40,7 +40,6 @@ http://everythingcommodore.com/download.php
 
 https://github.com/jblang/supermon64
 https://www.atarimagazines.com/compute/issue32/082_1_SUPERMON_64.php
-https://archive.org/stream/1983-01-compute-magazine/Compute_Issue_032_1983_Jan#page/n161/mode/2up
 https://archive.org/stream/1983-01-compute-magazine/Compute_Issue_032_1983_Jan#page/n163/mode/2up
 
 
@@ -54,3 +53,12 @@ vic20
 https://misfit.itch.io/pentagorat
 
 http://www.zimmers.net/anonftp/pub/cbm/vic20/
+
+
+---
+
+peeks and pokes
+
+http://ready64.org/articoli/_files/043_pokesc64.txt
+
+https://www.lemon64.com/forum/viewtopic.php?t=2805
